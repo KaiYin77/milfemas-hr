@@ -6,7 +6,7 @@ Automated daily check-in and check-out scripts for Femas Cloud attendance system
 
 - Automatic daily check-in and check-out to Femas Cloud
 - Check-in at 8:50 AM, Check-out at 7:00 PM
-- Skips weekends automatically
+- Skips weekends and Taiwan national holidays automatically
 - Configurable random delay to avoid detection
 - Logs all activities
 - 3-step process: clock listing → revision save → attendance status verification
@@ -101,16 +101,35 @@ Or open them in Notepad:
 
 - **Check-in**: 8:50 AM (Monday - Friday)
 - **Check-out**: 7:00 PM (Monday - Friday)
-- Weekends are automatically skipped
+- Weekends and Taiwan national holidays are automatically skipped
 
 ## How it Works
 
 Both scripts follow the same 3-step process:
 
-1. Checks if today is a weekend (skips if Saturday/Sunday)
+1. Checks if today is a weekend or Taiwan national holiday (skips if yes)
 2. Optional random delay (0-20 minutes, currently disabled)
 3. Logs in to Femas Cloud
 4. **Step 1**: POST to `Users/clock_listing` with clock data (clock_type: S for check-in, E for check-out)
 5. **Step 2**: POST to `revision_save` with pk parameter
 6. **Step 3**: GET to `att_status_listing` for verification
 7. Logs out and cleans up cookies
+
+## Holiday Detection
+
+The `check_holiday.sh` script detects:
+- **Weekends**: Saturday and Sunday
+- **Taiwan National Holidays**: Includes Spring Festival, Tomb Sweeping Day, Dragon Boat Festival, Mid-Autumn Festival, National Day, etc.
+
+**Testing Holiday Detection:**
+```bash
+# Test with today's date
+bash test_holiday.sh
+
+# Test with a specific date
+bash test_holiday.sh 2025-01-29  # Spring Festival
+bash test_holiday.sh 2025-10-10  # National Day
+```
+
+**Updating Holidays:**
+Edit `check_holiday.sh` and update the `HOLIDAYS_XXXX` arrays for each year. Taiwan national holidays are usually announced by the government in the previous year.

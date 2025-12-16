@@ -3,7 +3,7 @@
 ####################################
 # Femas Cloud Daily Check-in Script
 # - Credentials loaded from .env file
-# - Skip weekends
+# - Skip weekends and national holidays
 # - Random delay
 # - Login
 # - Check-in
@@ -37,17 +37,17 @@ LOGOUT_URL="https://www.femascloud.com/upbeattech/accounts/logout"
 
 COOKIE="/tmp/femas.cookies"
 
-# ---- skip weekend ----
-DAY=$(date +%u)   # 1=Mon ... 6=Sat 7=Sun
-if [ "$DAY" -ge 6 ]; then
-  echo "$(date) | 🟡 Weekend detected, skipping check-in"
+# ---- check holiday (weekend + national holidays) ----
+bash "$SCRIPT_DIR/check_holiday.sh"
+if [ $? -ne 0 ]; then
+  echo "$(date) | 🟡 Holiday detected, skipping check-in"
   exit 0
 fi
 
 # ---- random delay (0–10 minutes) ----
 DELAY=$(( RANDOM % 600 ))
 # DELAY=0
-echo "$(date) | Sleeping ${DELAY}s before check-in"
+echo "$(date) | 🟢 Sleeping ${DELAY}s before check-in"
 sleep "$DELAY"
 
 # ---- clean old cookie ----
@@ -78,7 +78,7 @@ fi
 echo "$(date) | 🟢 User ID: $USER_ID"
 
 # ---- step 1: clock listing ----
-echo "$(date) | 🟢 Step 1: Clock listing"
+echo "$(date) | 🟢 Clock listing"
 curl -s -b "$COOKIE" \
   -X POST "$CLOCK_LISTING_URL" \
   -H "Content-Type: application/x-www-form-urlencoded; charset=UTF-8" \
@@ -87,14 +87,14 @@ curl -s -b "$COOKIE" \
   --data "_method=POST&data[ClockRecord][user_id]=$USER_ID&data[AttRecord][user_id]=$USER_ID&data[ClockRecord][shift_id]=&data[ClockRecord][period]=1&data[ClockRecord][clock_type]=S&data[ClockRecord][latitude]=&data[ClockRecord][longitude]=" > /dev/null
 
 # ---- step 2: revision save ----
-echo "$(date) | 🟢 Step 2: Revision save"
+echo "$(date) | 🟢 Revision save"
 curl -s -b "$COOKIE" \
   -X POST "$REVISION_SAVE_URL" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   --data "pk=users%2Fshow_time" > /dev/null
 
 # ---- step 3: attendance status listing ----
-echo "$(date) | 🟢 Step 3: Attendance status verification"
+echo "$(date) | 🟢 Attendance status verification"
 curl -s -b "$COOKIE" "$STATUS_URL" > /dev/null
 
 # ---- logout ----
