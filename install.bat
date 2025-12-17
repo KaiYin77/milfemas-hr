@@ -56,9 +56,39 @@ if "%CHECKIN_TIME%"=="" set CHECKIN_TIME=08:50
 echo Check-in time set to: %CHECKIN_TIME%
 echo.
 
-REM ---- Prompt for checkout time ----
-set /p CHECKOUT_TIME="Enter check-out time (Format: HH:MM, e.g., 19:00): "
-if "%CHECKOUT_TIME%"=="" set CHECKOUT_TIME=19:00
+REM ---- Calculate suggested checkout time (9.5 hours after check-in) ----
+for /f "tokens=1,2 delims=:" %%a in ("%CHECKIN_TIME%") do (
+    set CHECKIN_HOUR=%%a
+    set CHECKIN_MIN=%%b
+)
+
+REM Remove leading zeros
+set /a CHECKIN_HOUR=10%CHECKIN_HOUR% %% 100
+set /a CHECKIN_MIN=10%CHECKIN_MIN% %% 100
+
+REM Convert to total minutes
+set /a TOTAL_MIN=CHECKIN_HOUR*60+CHECKIN_MIN
+
+REM Add 9.5 hours (570 minutes)
+set /a TOTAL_MIN=TOTAL_MIN+570
+
+REM Convert back to hours and minutes
+set /a SUGGESTED_HOUR=TOTAL_MIN/60
+set /a SUGGESTED_MIN=TOTAL_MIN%%60
+
+REM Handle day overflow (if hour >= 24)
+if %SUGGESTED_HOUR% GEQ 24 set /a SUGGESTED_HOUR=SUGGESTED_HOUR-24
+
+REM Format with leading zeros
+if %SUGGESTED_HOUR% LSS 10 (set SUGGESTED_HOUR=0%SUGGESTED_HOUR%)
+if %SUGGESTED_MIN% LSS 10 (set SUGGESTED_MIN=0%SUGGESTED_MIN%)
+
+set SUGGESTED_CHECKOUT=%SUGGESTED_HOUR%:%SUGGESTED_MIN%
+
+REM ---- Prompt for checkout time with suggestion ----
+echo Suggested check-out time (9.5 hours after check-in): %SUGGESTED_CHECKOUT%
+set /p CHECKOUT_TIME="Enter check-out time (or press Enter for %SUGGESTED_CHECKOUT%): "
+if "%CHECKOUT_TIME%"=="" set CHECKOUT_TIME=%SUGGESTED_CHECKOUT%
 echo Check-out time set to: %CHECKOUT_TIME%
 echo.
 
