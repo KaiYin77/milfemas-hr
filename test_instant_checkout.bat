@@ -7,13 +7,16 @@ REM ========================================
 SET SCRIPT_DIR=%~dp0
 SET ENV_FILE=%SCRIPT_DIR%.env
 
+REM Change to script directory first
+cd /d "%SCRIPT_DIR%"
+
 echo ========================================
 echo   Instant Checkout Test
 echo ========================================
 echo.
 
 REM ---- Check if .env file exists ----
-if not exist "%ENV_FILE%" (
+if not exist .env (
     echo [FAIL] .env file not found at: %ENV_FILE%
     echo        Please run install.bat first
     echo.
@@ -27,7 +30,7 @@ echo.
 
 REM ---- Run checkout with SKIP_DELAY ----
 set SKIP_DELAY=1
-call "%SCRIPT_DIR%checkout.bat"
+call checkout.bat
 set RESULT=%ERRORLEVEL%
 set SKIP_DELAY=
 

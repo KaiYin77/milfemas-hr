@@ -146,20 +146,84 @@ echo [Step 5/8] Running essential tests
 echo ========================================
 echo.
 
+REM Change to script directory for bash script execution
+cd /d "%SCRIPT_DIR%"
+
 REM ---- Test 1: Check bash installation ----
 echo [Test 1/2] Checking bash installation...
-where bash >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
+
+SET BASH_FOUND=0
+
+REM Try MSYS2 bash first
+if exist "C:\msys64\usr\bin\bash.exe" (
     echo [PASS] Bash is available
-    if exist "%SCRIPT_DIR%test_bash.sh" (
-        bash "%SCRIPT_DIR%test_bash.sh"
+    if exist test_bash.sh (
+        "C:\msys64\usr\bin\bash.exe" ./test_bash.sh
         if %ERRORLEVEL% NEQ 0 (
             echo [WARNING] Bash test failed, but continuing...
         )
     )
-) else (
-    echo [FAIL] Bash not found! Please install Git for Windows or WSL.
-    echo       Download Git: https://git-scm.com/download/win
+    SET BASH_FOUND=1
+    goto :bash_test_done
+)
+
+REM Try Git Bash
+if exist "C:\Program Files\Git\bin\bash.exe" (
+    echo [PASS] Bash is available
+    if exist test_bash.sh (
+        "C:\Program Files\Git\bin\bash.exe" ./test_bash.sh
+        if %ERRORLEVEL% NEQ 0 (
+            echo [WARNING] Bash test failed, but continuing...
+        )
+    )
+    SET BASH_FOUND=1
+    goto :bash_test_done
+)
+
+if exist "C:\Program Files (x86)\Git\bin\bash.exe" (
+    echo [PASS] Bash is available
+    if exist test_bash.sh (
+        "C:\Program Files (x86)\Git\bin\bash.exe" ./test_bash.sh
+        if %ERRORLEVEL% NEQ 0 (
+            echo [WARNING] Bash test failed, but continuing...
+        )
+    )
+    SET BASH_FOUND=1
+    goto :bash_test_done
+)
+
+REM Check Local AppData
+if exist "%LOCALAPPDATA%\Programs\Git\bin\bash.exe" (
+    echo [PASS] Bash is available
+    if exist test_bash.sh (
+        "%LOCALAPPDATA%\Programs\Git\bin\bash.exe" ./test_bash.sh
+        if %ERRORLEVEL% NEQ 0 (
+            echo [WARNING] Bash test failed, but continuing...
+        )
+    )
+    SET BASH_FOUND=1
+    goto :bash_test_done
+)
+
+REM Try bash from PATH
+where bash >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo [PASS] Bash is available
+    if exist test_bash.sh (
+        bash ./test_bash.sh
+        if %ERRORLEVEL% NEQ 0 (
+            echo [WARNING] Bash test failed, but continuing...
+        )
+    )
+    SET BASH_FOUND=1
+    goto :bash_test_done
+)
+
+:bash_test_done
+if %BASH_FOUND% EQU 0 (
+    echo [FAIL] Bash not found!
+    echo.
+    echo Please install Git for Windows: https://git-scm.com/download/win
     pause
     exit /b 1
 )
@@ -169,9 +233,30 @@ REM ---- Test 2: Instant checkout sanity test ----
 echo [Test 2/2] Testing checkout script (instant, no delay)...
 echo.
 
-if exist "%SCRIPT_DIR%test_instant_checkout.sh" (
-    bash "%SCRIPT_DIR%test_instant_checkout.sh"
-    set CHECKOUT_RESULT=%ERRORLEVEL%
+SET BASH_CMD=
+if exist "C:\msys64\usr\bin\bash.exe" (
+    SET BASH_CMD="C:\msys64\usr\bin\bash.exe"
+) else if exist "C:\Program Files\Git\bin\bash.exe" (
+    SET BASH_CMD="C:\Program Files\Git\bin\bash.exe"
+) else if exist "C:\Program Files (x86)\Git\bin\bash.exe" (
+    SET BASH_CMD="C:\Program Files (x86)\Git\bin\bash.exe"
+) else if exist "%LOCALAPPDATA%\Programs\Git\bin\bash.exe" (
+    SET BASH_CMD="%LOCALAPPDATA%\Programs\Git\bin\bash.exe"
+) else (
+    where bash >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        SET BASH_CMD=bash
+    )
+)
+
+if exist test_instant_checkout.sh (
+    if not "%BASH_CMD%"=="" (
+        %BASH_CMD% ./test_instant_checkout.sh
+        set CHECKOUT_RESULT=%ERRORLEVEL%
+    ) else (
+        echo [WARNING] Bash not found, skipping test
+        set CHECKOUT_RESULT=0
+    )
 ) else (
     echo [WARNING] test_instant_checkout.sh not found, skipping test
     set CHECKOUT_RESULT=0

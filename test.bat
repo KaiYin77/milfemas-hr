@@ -16,22 +16,48 @@ echo.
 echo Running all tests...
 echo.
 
+REM Change to script directory for bash script execution
+cd /d "%SCRIPT_DIR%"
+
 REM ========================================
-REM Check if bash is available
+REM Find bash executable
 REM ========================================
 
-where bash >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Bash not found! Please install Git for Windows or WSL.
-    echo         Download Git: https://git-scm.com/download/win
-    echo.
-    pause
-    exit /b 1
+SET BASH_CMD=
+if exist "C:\msys64\usr\bin\bash.exe" (
+    SET BASH_CMD="C:\msys64\usr\bin\bash.exe"
+    goto :run_tests
 )
 
-echo [INFO] Bash found:
-where bash
+if exist "C:\Program Files\Git\bin\bash.exe" (
+    SET BASH_CMD="C:\Program Files\Git\bin\bash.exe"
+    goto :run_tests
+)
+
+if exist "C:\Program Files (x86)\Git\bin\bash.exe" (
+    SET BASH_CMD="C:\Program Files (x86)\Git\bin\bash.exe"
+    goto :run_tests
+)
+
+if exist "%LOCALAPPDATA%\Programs\Git\bin\bash.exe" (
+    SET BASH_CMD="%LOCALAPPDATA%\Programs\Git\bin\bash.exe"
+    goto :run_tests
+)
+
+where bash >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    SET BASH_CMD=bash
+    goto :run_tests
+)
+
+echo [ERROR] Bash not found!
 echo.
+echo Please install Git for Windows: https://git-scm.com/download/win
+echo.
+pause
+exit /b 1
+
+:run_tests
 
 REM ========================================
 REM Test 1: Bash Installation Test
@@ -42,8 +68,8 @@ echo [Test 1] Bash Installation Test
 echo ========================================
 echo.
 
-if exist "%SCRIPT_DIR%test_bash.sh" (
-    bash "%SCRIPT_DIR%test_bash.sh"
+if exist test_bash.sh (
+    %BASH_CMD% ./test_bash.sh
     if %ERRORLEVEL% EQU 0 (
         set /a TEST_PASSED+=1
     ) else (
@@ -67,8 +93,8 @@ echo [Test 2] RANDOM Distribution Test
 echo ========================================
 echo.
 
-if exist "%SCRIPT_DIR%test_random.sh" (
-    bash "%SCRIPT_DIR%test_random.sh"
+if exist test_random.sh (
+    %BASH_CMD% ./test_random.sh
     if %ERRORLEVEL% EQU 0 (
         set /a TEST_PASSED+=1
     ) else (
@@ -92,12 +118,12 @@ echo [Test 3] Holiday Configuration Test
 echo ========================================
 echo.
 
-if not exist "%SCRIPT_DIR%holidays" (
+if not exist holidays (
     echo [SKIP] holidays file not found
     echo       Run install.bat or: copy holidays.example holidays
     set /a TEST_SKIPPED+=1
-) else if exist "%SCRIPT_DIR%test_holidays.sh" (
-    bash "%SCRIPT_DIR%test_holidays.sh"
+) else if exist test_holidays.sh (
+    %BASH_CMD% ./test_holidays.sh
     if %ERRORLEVEL% EQU 0 (
         set /a TEST_PASSED+=1
     ) else (
@@ -121,12 +147,12 @@ echo [Test 4] Instant Checkout Test
 echo ========================================
 echo.
 
-if not exist "%SCRIPT_DIR%.env" (
+if not exist .env (
     echo [SKIP] .env file not found
     echo       Run install.bat first to configure credentials
     set /a TEST_SKIPPED+=1
-) else if exist "%SCRIPT_DIR%test_instant_checkout.sh" (
-    bash "%SCRIPT_DIR%test_instant_checkout.sh"
+) else if exist test_instant_checkout.sh (
+    %BASH_CMD% ./test_instant_checkout.sh
     if %ERRORLEVEL% EQU 0 (
         set /a TEST_PASSED+=1
     ) else (
@@ -150,12 +176,12 @@ echo [Test 5] User ID Inspection Test
 echo ========================================
 echo.
 
-if not exist "%SCRIPT_DIR%.env" (
+if not exist .env (
     echo [SKIP] .env file not found
     echo       Run install.bat first to configure credentials
     set /a TEST_SKIPPED+=1
-) else if exist "%SCRIPT_DIR%test_user_id.sh" (
-    bash "%SCRIPT_DIR%test_user_id.sh"
+) else if exist test_user_id.sh (
+    %BASH_CMD% ./test_user_id.sh
     if %ERRORLEVEL% EQU 0 (
         set /a TEST_PASSED+=1
     ) else (

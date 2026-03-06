@@ -20,7 +20,7 @@ COOKIE="/tmp/femas.cookies"
 # Loads credentials from .env file
 # Expects SCRIPT_DIR to be set.
 load_env() {
-	local env_file="$SCRIPT_DIR/.env"
+	local env_file="${SCRIPT_DIR}/.env"
 	if [ ! -f "$env_file" ]; then
 		echo "ERROR: .env file not found at $env_file"
 		echo "Please copy .env.example to .env and fill in your credentials"
@@ -37,7 +37,8 @@ load_env() {
 # Expects SCRIPT_DIR to be set.
 check_holiday() {
 	local action=$1
-	bash "$SCRIPT_DIR/check_holiday.sh"
+	# Use relative path to avoid Windows path issues
+	bash "${SCRIPT_DIR}/check_holiday.sh"
 	if [ $? -ne 0 ]; then
 		echo "$(date) | 🟡 Holiday detected, skipping $action"
 		exit 0

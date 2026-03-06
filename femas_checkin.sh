@@ -4,7 +4,8 @@
 # Femas Cloud Daily Check-in Script
 ####################################
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get the directory where this script is located
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 source "$SCRIPT_DIR/femas_common.sh"
 
 main() {
