@@ -337,4 +337,5 @@ echo.
 echo 5. Uninstall:
 echo    Run: uninstall.bat
 echo.
-pause
+if %ERRORLEVEL% NEQ 0 pause
+exit /b %ERRORLEVEL%

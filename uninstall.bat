@@ -71,4 +71,5 @@ echo To delete log files, please remove them manually:
 echo   %%TEMP%%\femas_checkin.log
 echo   %%TEMP%%\femas_checkout.log
 echo.
-pause
+if %ERRORLEVEL% NEQ 0 pause
+exit /b %ERRORLEVEL%

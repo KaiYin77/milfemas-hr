@@ -82,5 +82,5 @@ if %ERRORLEVEL% EQU 0 (
 echo.
 echo ========================================
 echo.
-pause
+if %ERRORLEVEL% NEQ 0 pause
 exit /b %ERRORLEVEL%

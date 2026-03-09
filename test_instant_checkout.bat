@@ -54,5 +54,5 @@ if %RESULT% EQU 0 (
 )
 
 echo.
-pause
+if %RESULT% NEQ 0 pause
 exit /b %RESULT%

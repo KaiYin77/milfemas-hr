@@ -220,5 +220,5 @@ if %TEST_FAILED% EQU 0 (
 )
 
 echo.
-pause
+if %TEST_FAILED% NEQ 0 pause
 exit /b %TEST_FAILED%
